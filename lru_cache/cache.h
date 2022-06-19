@@ -21,8 +21,9 @@ auto lru_cache(Result (*f)(Args...), std::optional<size_t> cache_size = std::nul
 
         if(cached_map_it == cache_map.end()){ // Not found in cache
             if(cache_size && cache.size() == *cache_size){ // Cache is full
-                cache_map.erase(cache.front().first); // Remove oldest element from map
-                cache.pop_front(); // Remove oldest element from cache
+                // Remove oldest element (at the front of the queue)
+                cache_map.erase(cache.front().first);
+                cache.pop_front();
             }
             const auto result = f(args...);
             cache.emplace_back(std::make_pair(args..., result));
