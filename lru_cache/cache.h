@@ -25,7 +25,7 @@ auto lru_cache(Result (*f)(Args...), std::optional<size_t> cache_size = std::nul
                 cache.pop_front(); // Remove oldest element from cache
             }
             const auto result = f(args...);
-            cache.emplace_front(std::make_pair(args..., result));
+            cache.emplace_back(std::make_pair(args..., result));
             cache_map.emplace(args..., cache.end() - 1); // End iterator points after last element
             return result;
         }
