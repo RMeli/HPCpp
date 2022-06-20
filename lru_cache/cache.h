@@ -30,6 +30,15 @@ auto lru_cache(Result (*f)(Args...), std::optional<size_t> cache_size = std::nul
             cache_map.emplace(args..., cache.end() - 1); // End iterator points after last element
             return result;
         }
+        else{ // Found in cache
+            // Move cached element to the end of the queue
+            // It is now the most recently used element
+            const auto cached_it = cached_map_it->second;
+            cache.push_back(*cached_it);
+            cache.erase(cached_it);
+
+            return cache.front().second;
+        }
 
         return cached_map_it->second->second;
     };
