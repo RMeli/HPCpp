@@ -7,13 +7,12 @@
 #include <thread>
 #include <cassert>
 
-constexpr size_t cache_size = 2;
-constexpr int r = 42;
+constexpr size_t cache_size = 3;
 
-int slow_calculation(size_t n){
+size_t slow_calculation(size_t n){
   using namespace std::chrono_literals; // ms
   std::this_thread::sleep_for(500ms);
-  return r;
+  return n;
 }
 
 int main(){
@@ -22,83 +21,54 @@ int main(){
     auto f = lru_cache(slow_calculation, cache_size);
     std::cout << "LRU cache size: " << cache_size << '\n';
 
-    // Calling the first time executes the function
+    for (size_t i = 0; i < cache_size; i++) {
+      auto arg = i;
+
+      t.start();
+      auto result = f(arg);
+      auto elapsed = t.stop();
+      assert(result == arg);
+      std::cout << "Time f(" << arg << "): " << elapsed.count() << " ms\n";
+
+      t.start();
+      result = f(arg);
+      elapsed = t.stop();
+      assert(result == arg);
+      std::cout << "Time f(" << arg << "): " << elapsed.count() << " ms\n";
+    }
+
+    // Bring 1 in front of the cache
     auto arg = 1;
     t.start();
-    auto result =f(arg);
+    auto result = f(arg);
     auto elapsed = t.stop();
-    assert(result == r);
+    assert(result == arg);
     std::cout << "Time f(" << arg << "): " << elapsed.count() << " ms\n";
 
-    // Calling the second time with same argument reads the cache
-    arg = 1;
-    t.start();
-    result = f(arg);
-    elapsed = t.stop();
-    assert(result == r);
-    std::cout << "Time f(" << arg << "): " << elapsed.count() << " ms\n";
+    // Cache now contains: 0, 2, 1
 
-    // Calling with a different argument executes the function again
-    arg = 2;
-    t.start();
-    result = f(arg);
-    elapsed = t.stop();
-    assert(result == r);
-    std::cout << "Time f(" << arg << "): " << elapsed.count() << " ms\n";
-
-    // Calling with the previous argument brings it back to the front
-    arg = 1;
-    t.start();
-    result = f(arg);
-    elapsed = t.stop();
-    assert(result == r);
-    std::cout << "Time f(" << arg << "): " << elapsed.count() << " ms\n";
-
-    // Calling with a different argument executes the function again
-    // First element of the cache gets evicted since cache size is limited to 2
+    // Evict 0 from cache
     arg = 3;
     t.start();
     result = f(arg);
     elapsed = t.stop();
-    assert(result == r);
+    assert(result == arg);
     std::cout << "Time f(" << arg << "): " << elapsed.count() << " ms\n";
 
-    // Latest element is now in cache
-    arg = 3;
+    // Evict 2 from cache
+    arg = 4;
     t.start();
     result = f(arg);
     elapsed = t.stop();
-    assert(result == r);
+    assert(result == arg);
     std::cout << "Time f(" << arg << "): " << elapsed.count() << " ms\n";
 
-    // Second element was evicted from the cache
-    arg = 2;
-    t.start();
-    result = f(arg);
-    elapsed = t.stop();
-    assert(result == r);
-    std::cout << "Time f(" << arg << "): " << elapsed.count() << " ms\n";
-
-    arg = 2;
-    t.start();
-    result = f(arg);
-    elapsed = t.stop();
-    assert(result == r);
-    std::cout << "Time f(" << arg << "): " << elapsed.count() << " ms\n";
-
-    arg = 3;
-    t.start();
-    result = f(arg);
-    elapsed = t.stop();
-    assert(result == r);
-    std::cout << "Time f(" << arg << "): " << elapsed.count() << " ms\n";
-
-    // First argument was evicted from the cache, needs to recompute
+    // 1 still cached
     arg = 1;
     t.start();
     result = f(arg);
     elapsed = t.stop();
-    assert(result == r);
+    assert(result == arg);
     std::cout << "Time f(" << arg << "): " << elapsed.count() << " ms\n";
 
     return 0;

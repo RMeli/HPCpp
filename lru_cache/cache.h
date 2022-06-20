@@ -17,14 +17,17 @@ auto lru_cache(Result (*f)(Args...), std::optional<size_t> cache_size = std::nul
     // Capture function pointer and cache
     // Lambda is mutable in order to modify members (cache)
     return [f, cache, cache_map, cache_size](Args... args) mutable -> Result {
-        const auto cached_map_it = cache_map.find(args...);
+        auto cached_map_it = cache_map.find(args...);
 
         if(cached_map_it == cache_map.end()){ // Not found in cache
             if(cache_size && cache.size() == *cache_size){ // Cache is full
-                // Remove oldest element (at the front of the queue)
+                // Remove oldest element, at the front of the queue
+                // Remove first from unordered_map, using the argument as key
+                // Then remove from the front of the queue
                 cache_map.erase(cache.front().first);
                 cache.pop_front();
             }
+            // Compute element and add it to the cache
             const auto result = f(args...);
             cache.emplace_back(std::make_pair(args..., result));
             cache_map.emplace(args..., cache.end() - 1); // End iterator points after last element
@@ -33,13 +36,12 @@ auto lru_cache(Result (*f)(Args...), std::optional<size_t> cache_size = std::nul
         else{ // Found in cache
             // Move cached element to the end of the queue
             // It is now the most recently used element
-            const auto cached_it = cached_map_it->second;
+            auto cached_it = cached_map_it->second;
             cache.push_back(*cached_it);
             cache.erase(cached_it);
+            cached_map_it->second = cache.end() - 1;
 
-            return cache.front().second;
+            return cache.back().second;
         }
-
-        return cached_map_it->second->second;
     };
 }
