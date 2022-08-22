@@ -3,7 +3,6 @@
 #include <vector>
 #include <iostream>
 
-#include "timer.h"
 #include <benchmark/benchmark.h>
 
 constexpr size_t dims = 3;
@@ -57,45 +56,6 @@ BENCHMARK(BM_forces_aos_noalloc);
 
 BENCHMARK_MAIN();
 
-/*
-int main(){
-    constexpr size_t N = 1000;
-    constexpr size_t repeats = 100;
-
-    std::vector<Force> fn_aos(N, {0.0, 0.0, 0.0});
-    std::vector<double> fn_soa(dims * N, 0.0);
-
-    Timer t;
-
-    t.start();
-    for (size_t i = 0; i < repeats; ++i) {
-      auto f_aos = forces_soa(positions_soa);
-    }
-    auto elapsed = t.stop();
-    std::cout << "AOS: " << elapsed.count() << " ms" << '\n';
-
-    t.start();
-    for (size_t i = 0; i < repeats; ++i) {
-      forces_aos_noalloc(positions_aos, fn_aos);
-    }
-    elapsed = t.stop();
-    std::cout << "AOS (noalloc): " << elapsed.count() << " ms" << '\n';
-
-    t.start();
-    for (size_t i = 0; i < repeats; ++i) {
-      auto f_soa = forces_soa(positions_soa);
-    }
-    elapsed = t.stop();
-    std::cout << "SOA: " << elapsed.count() << " ms" << '\n';
-
-    t.start();
-    for (size_t i = 0; i < repeats; ++i) {
-      forces_soa_noalloc(positions_soa, fn_soa);
-    }
-    elapsed = t.stop();
-    std::cout << "SOA (noalloc): " << elapsed.count() << " ms" << '\n';
-}
-*/
 std::vector<Force> forces_aos(const std::vector<Position>& positions){
     const size_t n = positions.size();
 
