@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "timer.h"
+#include <benchmark/benchmark.h>
 
 constexpr size_t dims = 3;
 using Position = std::array<double, dims>;
@@ -14,12 +15,53 @@ std::vector<double> forces_soa(const std::vector<double>& positions);
 std::vector<Force> forces_aos_noalloc(const std::vector<Position> &positions, std::vector<Force>& f);
 std::vector<double> forces_soa_noalloc(const std::vector<double> &positions, std::vector<double>& f);
 
+constexpr size_t N = 1000;
+
+static void BM_forces_soa(benchmark::State& state){
+  std::vector<double> positions_soa(dims * N, 1.0);
+
+  for (auto _: state){
+    auto f_aos = forces_soa(positions_soa);
+  }
+}
+BENCHMARK(BM_forces_soa);
+
+static void BM_forces_soa_noalloc(benchmark::State& state){
+  std::vector<double> positions_soa(dims * N, 1.0);
+  std::vector<double> fn_soa(dims * N, 0.0);
+
+  for (auto _: state){
+    forces_soa_noalloc(positions_soa, fn_soa);
+  }
+}
+BENCHMARK(BM_forces_soa_noalloc);
+
+static void BM_forces_aos(benchmark::State& state){
+  std::vector<Position> positions_aos(N, {1.0, 1.0, 1.0});
+
+  for (auto _: state){
+    auto f_aos = forces_aos(positions_aos);
+  }
+}
+BENCHMARK(BM_forces_aos);
+
+static void BM_forces_aos_noalloc(benchmark::State& state){
+  std::vector<Position> positions_aos(N, {1.0, 1.0, 1.0});
+  std::vector<Force> fn_aos(N, {0.0, 0.0, 0.0});
+
+  for (auto _: state){
+    forces_aos_noalloc(positions_aos, fn_aos);
+  }
+}
+BENCHMARK(BM_forces_aos_noalloc);
+
+BENCHMARK_MAIN();
+
+/*
 int main(){
     constexpr size_t N = 1000;
     constexpr size_t repeats = 100;
 
-    std::vector<Position> positions_aos(N, {1.0, 1.0, 1.0});
-    std::vector<double> positions_soa(dims * N, 1.0);
     std::vector<Force> fn_aos(N, {0.0, 0.0, 0.0});
     std::vector<double> fn_soa(dims * N, 0.0);
 
@@ -53,7 +95,7 @@ int main(){
     elapsed = t.stop();
     std::cout << "SOA (noalloc): " << elapsed.count() << " ms" << '\n';
 }
-
+*/
 std::vector<Force> forces_aos(const std::vector<Position>& positions){
     const size_t n = positions.size();
 

@@ -7,8 +7,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "-Wall")
 
+find_package(benchmark REQUIRED)
+
 add_executable(soa_vs_aos_pairwise
     main.cpp
     ../../_utils/timer.cpp
 )
+
+target_link_libraries(soa_vs_aos_pairwise benchmark::benchmark benchmark::benchmark_main)
 target_include_directories(soa_vs_aos_pairwise PRIVATE "../../_utils/")
