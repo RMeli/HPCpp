@@ -11,8 +11,6 @@ find_package(benchmark REQUIRED)
 
 add_executable(soa_vs_aos_pairwise
     main.cpp
-    ../../_utils/timer.cpp
 )
 
 target_link_libraries(soa_vs_aos_pairwise benchmark::benchmark benchmark::benchmark_main)
-target_include_directories(soa_vs_aos_pairwise PRIVATE "../../_utils/")
