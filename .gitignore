@@ -6,3 +6,6 @@ build/
 
 # editors
 .vscode
+
+# Singularity
+*.sif
