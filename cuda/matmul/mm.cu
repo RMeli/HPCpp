@@ -1,6 +1,7 @@
 #include "mm_cu.h"
 
 #include <stdexcept>
+#include <string>
 
 namespace cuda
 {
@@ -49,7 +50,11 @@ namespace cuda
         auto err = cudaGetLastError();
         if (cudaSuccess != err)
         {
-            throw std::runtime_error(cudaGetErrorString(err));
+            auto n_tpb_s = std::to_string(n_threads_per_block);
+            auto n_b_s = std::to_string(n_blocks);
+            auto error = "CUDA ERROR: " + std::string(cudaGetErrorString(err));
+            auto kernel = "\nKERNEL: mm_kernel<<<" + n_tpb_s + ',' + n_b_s + ">>>";
+            throw std::runtime_error(error + kernel);
         }
 
         cudaMemcpy(c, c_device, c_size_bytes, cudaMemcpyDeviceToHost);
