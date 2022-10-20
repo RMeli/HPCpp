@@ -14,6 +14,11 @@ From: nvidia/cuda:11.7.1-cudnn8-devel-ubuntu22.04
     update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
     pip install numpy scipy pandas matplotlib seaborn
 
+    # Linear Algebra
+    apt install -y libopenblas-dev liblapack-dev libarpack2-dev libsuperlu-dev
+    apt install -y libarmadillo-dev
+    apt install -y libarma-dev libeigen3-dev
+
     # Install google/benchmark
     git clone https://github.com/google/benchmark.git
     cd benchmark
