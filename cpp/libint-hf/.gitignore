@@ -1,0 +1,10 @@
+# CMake
+build/
+
+# Spack
+spack.lock
+.spack-env
+__pycache__
+
+# macOS
+.DS_Store
