@@ -20,8 +20,14 @@ make -j
 
 Run:
 
-```
+```bash
 ./hdf5_qe
+```
+
+Verify:
+
+```bash
+h5dump qe.h5
 ```
 
 ## Documentation
