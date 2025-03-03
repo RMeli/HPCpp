@@ -1,0 +1,22 @@
+if(BLA_VENDOR STREQUAL "NVPL")
+	find_package("nvpl_lapack" REQUIRED)
+
+	if(BLA_SIZEOF_INTEGER EQUAL 4)
+		set(_nvpl_int "_lp64")
+	else()
+		set(_nvpl_int "_ilp64")
+	endif()
+
+	if((BLA_THREAD STREQUAL "OMP") OR (BLA_THREAD STREQUAL "ANY"))
+		set(_nvpl_thread "_omp")
+	else()
+		set(_nvpl_thread "_seq")
+	endif()
+
+	if(NOT TARGET "LAPACK::LAPACK")
+		add_library("LAPACK::LAPACK" INTERFACE IMPORTED)
+		target_link_libraries("LAPACK::LAPACK" INTERFACE "nvpl::lapack${_nvpl_int}${_nvpl_thread}")
+	endif()
+else()
+	find_package("LAPACK" REQUIRED)
+endif()
