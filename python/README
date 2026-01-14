@@ -1,0 +1,10 @@
+# C/Python
+
+## Installation
+
+```bash
+uv venv
+source .venv/bin/activate
+CC=gcc uv pip install -e .
+python test.py
+```
