@@ -1,17 +1,7 @@
 #include <iostream>
 #include <dlfcn.h>
 
-#include "handle.h"
-
-plugin_t PLUGIN;
-
 auto main(int argc, char* argv[]) -> int {
-
-    // -----
-    // Load shared libarary
-    // This automatically calls the constructor function in lib.cpp
-    // PLUGIN is populated by the constructor
-    // -----
 
     auto handle = dlopen("build/liblib.so", RTLD_LAZY);
 
@@ -22,10 +12,6 @@ auto main(int argc, char* argv[]) -> int {
     dlerror(); // Reset errors
     
 
-    // -----
-    // Manually load symbol 'add' from the shared library
-    // PLUGIN is not used here
-    // -----
     using add_t = int(*)(int, int);
     auto add = reinterpret_cast<add_t>(dlsym(handle, "add"));
 
@@ -40,17 +26,6 @@ auto main(int argc, char* argv[]) -> int {
     std::cout << "MANUALLY LOADED SYMBOL:\n";
     std::cout << "1 + 2 = " << result << '\n';
     
-    // -----
-    // Use the automatically registered plugin from the shared library
-    // -----
-    std::cout << "\nAUTOMATICALLY REGISTERED PLUGIN:\n";
-    std::cout << "plugin.name: " << PLUGIN.name << '\n';
-    std::cout << "plugin.add(3, 4) = " << PLUGIN.add(3, 4) << '\n';
-
-    // -----
-    // Cleanup
-    // -----
-
     dlclose(handle);
 
     return 0;
