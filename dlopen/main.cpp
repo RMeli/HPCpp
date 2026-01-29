@@ -9,8 +9,9 @@ auto main(int argc, char* argv[]) -> int {
         std::cerr << "Cannot open library: " << dlerror() << '\n';
         return 1;
     }
+    dlerror(); // Reset errors
 
-
+    // Define function poitner and load the symbol
     using add_t = int(*)(int, int);
     auto add = reinterpret_cast<add_t>(dlsym(handle, "add"));
 
