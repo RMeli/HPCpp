@@ -12,6 +12,8 @@ auto main(int argc, char *argv[]) -> int {
   // This automatically calls the constructor function in lib.cpp
   // PLUGIN is populated by the constructor
   // -----
+  
+  std::cout << ">>> Started main.cpp\n";
 
   auto handle = dlopen("build/liblib.so", RTLD_LAZY);
 

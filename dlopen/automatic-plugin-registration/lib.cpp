@@ -18,8 +18,8 @@ extern "C" auto add(int a, int b) -> int {
 // Automatic plugin registration
 // This function is called when the shared library is loaded
 __attribute__((constructor))
-void register_plugin(){
-    std::cout << "Registering plugin... ";
+void plugin(){
+    std::cout << ">>> Registering plugin... ";
     plugin_t plugin;
     plugin.name = "add";
     plugin.add = add;
