@@ -9,3 +9,5 @@ build/
 
 # Singularity
 *.sif
+
+core*
