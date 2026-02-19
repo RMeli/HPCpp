@@ -1,15 +1,13 @@
 #include <umpire/ResourceManager.hpp>
 #include <umpire/Umpire.hpp>
-#include <umpire/strategy/PoolCoalesceHeuristic.hpp>
 #include <umpire/strategy/QuickPool.hpp>
 
 #include <algorithm>
 #include <vector>
+#include <string>
 
 constexpr auto initial_block_bytes = (1 << 30);
 constexpr auto next_block_bytes = (1 << 30);
-constexpr auto coalescing_free_ratio = 1.0;
-constexpr auto coalescing_reallocation_ratio = 1.0;
 
 // Simulate matrix size
 constexpr auto matrix_size = 20000;
@@ -22,8 +20,8 @@ auto main(int argc, char **argv) -> int {
     return 1;
   }
 
-  const auto block_size = std::atoi(argv[1]);
-  const auto alignment_bytes = std::atoi(argv[2]);
+  const auto block_size = std::stoul(argv[1]);
+  const auto alignment_bytes = std::stoul(argv[2]);
 
   const auto num_allocations_tiles =
       matrix_size * matrix_size / block_size / block_size;
