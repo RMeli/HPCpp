@@ -44,9 +44,9 @@ auto main(int argc, char **argv) -> int {
   const auto block_size = std::atoi(argv[1]);
   const auto alignment_bytes = std::atoi(argv[2]);
 
-  const auto num_allocations_unknown =
+  const auto num_allocations_tiles =
       matrix_size * matrix_size / block_size / block_size;
-  const auto bytes_unknown = block_size * block_size * sizeof(double);
+  const auto bytes_tiles = block_size * block_size * sizeof(double);
 
   auto &rm = umpire::ResourceManager::getInstance();
 
@@ -57,46 +57,62 @@ auto main(int argc, char **argv) -> int {
       get_coalesce_heuristic(coalescing_free_ratio,
                              coalescing_reallocation_ratio));
 
-  std::cout << "EXPECTED total allocation:\t" << std::fixed
+  std::cout << "EXPECTED total allocation: " << std::fixed
             << std::setprecision(2)
-            << (bytes_matrix + num_allocations_unknown * bytes_unknown) / 1e9
+            << (bytes_matrix + num_allocations_tiles * bytes_tiles) / 1e9
             << " GB" << std::endl;
 
-  std::cout << "Allocating " << 1 << " block of " << bytes_matrix
-            << " bytes on DEVICE" << std::endl;
+  const auto page_aligned_bytes_matrix =
+      bytes_matrix < alignment_bytes
+          ? alignment_bytes
+          : std::ceil(bytes_matrix / alignment_bytes) * alignment_bytes;
+  const auto page_aligned_bytes_tiles_single =
+      bytes_tiles < alignment_bytes
+          ? alignment_bytes
+          : std::ceil(bytes_tiles / alignment_bytes) * alignment_bytes;
+  const auto page_aligned_bytes_tiles =
+      page_aligned_bytes_tiles_single * num_allocations_tiles;
+
+  std::cout << "EXPECTED total page-aligned allocation: " << std::fixed
+            << std::setprecision(2)
+            << (page_aligned_bytes_matrix + page_aligned_bytes_tiles) / 1e9
+            << " GB" << std::endl;
+
+  std::cout << "Allocating 1 block of " << bytes_matrix
+            << " bytes on DEVICE...";
 
   auto d_ptr_matrix = pooled_device_allocator.allocate(bytes_matrix);
 
-  std::cout << "Allocated " << bytes_matrix << " bytes on DEVICE" << std::endl;
+  std::cout << "OK" << std::endl;
 
-  std::vector<void *> d_ptrs(num_allocations_unknown, nullptr);
+  std::vector<void *> d_ptrs(num_allocations_tiles, nullptr);
 
-  std::cout << "Allocating " << num_allocations_unknown << " blocks of "
-            << bytes_unknown << " bytes on DEVICE" << std::endl;
+  std::cout << "Allocating " << num_allocations_tiles << " blocks of "
+            << bytes_tiles << " bytes on DEVICE...";
 
   std::for_each(d_ptrs.begin(), d_ptrs.end(), [&](auto &ptr) {
-    ptr = pooled_device_allocator.allocate(bytes_unknown);
+    ptr = pooled_device_allocator.allocate(bytes_tiles);
   });
 
-  std::cout << "Allocated " << num_allocations_unknown * bytes_unknown
-            << " bytes on DEVICE" << std::endl;
+  std::cout << "OK" << std::endl;
 
-  std::cout << "UMPIRE pooled_device_allocator size:\t" << std::fixed
+  std::cout << "UMPIRE pooled_device_allocator getCurrentSize(): " << std::fixed
             << std::setprecision(2)
             << pooled_device_allocator.getCurrentSize() / 1e9 << " GB"
             << std::endl;
 
-  std::cout << "UMPIRE pooled_device_allocator actual size:\t" << std::fixed
+  std::cout << "UMPIRE pooled_device_allocator getActualSize(): " << std::fixed
             << std::setprecision(2)
             << pooled_device_allocator.getActualSize() / 1e9 << " GB"
             << std::endl;
 
   // Possible double counting of DEVICE and DEVICE:0
-  std::cout << "UMPIRE total allocation:\t" << std::fixed
-            << std::setprecision(2) << umpire::get_total_bytes_allocated() / 1e9
-            << " GB" << std::endl;
+  // std::cout << "UMPIRE total allocation:\t" << std::fixed
+  //          << std::setprecision(2) << umpire::get_total_bytes_allocated() /
+  //          1e9
+  //          << " GB" << std::endl;
 
-  sleep(30);
+  // sleep(30);
 
   std::for_each(d_ptrs.begin(), d_ptrs.end(),
                 [&](auto &ptr) { pooled_device_allocator.deallocate(ptr); });
