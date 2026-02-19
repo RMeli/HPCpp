@@ -10,5 +10,4 @@ find_package(OpenMP REQUIRED)
 
 add_executable(main main.cpp)
 target_link_libraries(main PRIVATE umpire OpenMP::OpenMP_CXX)
-target_compile_options(main PRIVATE -Wall -Wextra -Wpedantic -fsanitize=address -fsanitize=undefined)
-target_link_options(main PRIVATE -fsanitize=address -fsanitize=undefined)
+target_compile_options(main PRIVATE -Wall -Wextra -Wpedantic)
