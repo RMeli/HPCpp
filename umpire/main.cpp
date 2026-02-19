@@ -15,25 +15,6 @@ constexpr auto coalescing_reallocation_ratio = 1.0;
 constexpr auto matrix_size = 20000;
 constexpr auto bytes_matrix = matrix_size * matrix_size * sizeof(double);
 
-using PoolType = umpire::strategy::QuickPool;
-using CoalesceHeuristicType = umpire::strategy::PoolCoalesceHeuristic<PoolType>;
-
-static CoalesceHeuristicType
-get_coalesce_heuristic(double coalesce_free_ratio,
-                       double coalesce_reallocation_ratio) {
-  return [=](const umpire::strategy::QuickPool &pool) {
-    std::size_t threshold =
-        static_cast<std::size_t>(coalesce_free_ratio * pool.getActualSize());
-    if (pool.getReleasableBlocks() >= 2 &&
-        pool.getReleasableSize() >= threshold) {
-      return static_cast<std::size_t>(coalesce_reallocation_ratio *
-                                      pool.getActualSize());
-    } else {
-      return static_cast<std::size_t>(0);
-    }
-  };
-}
-
 auto main(int argc, char **argv) -> int {
   if (argc != 3) {
     std::cerr << "Usage: " << argv[0] << "<block_size> <alignment_bytes>"
@@ -51,11 +32,9 @@ auto main(int argc, char **argv) -> int {
   auto &rm = umpire::ResourceManager::getInstance();
 
   auto device_allocator = rm.getAllocator("DEVICE");
-  auto pooled_device_allocator = rm.makeAllocator<PoolType>(
+  auto pooled_device_allocator = rm.makeAllocator<umpire::strategy::QuickPool>(
       "POOLED_DEVICE", device_allocator, initial_block_bytes, next_block_bytes,
-      alignment_bytes,
-      get_coalesce_heuristic(coalescing_free_ratio,
-                             coalescing_reallocation_ratio));
+      alignment_bytes);
 
   std::cout << "EXPECTED total allocation: " << std::fixed
             << std::setprecision(2)
